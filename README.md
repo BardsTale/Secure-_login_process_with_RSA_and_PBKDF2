@@ -266,7 +266,7 @@ public class LoginServiceImpl implements LoginService {
             password = SecureModule.decryptRsa(privateKey, securedPASSWD);
 
             //복호화 한 ID를 통해 계정 정보를 가져온다.
-        	UserInfo userInfo = LoginDao.getLoginInfo(userid);
+	    UserInfo userInfo = LoginDao.getLoginInfo(userid);
             
             ...
             
