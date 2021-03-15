@@ -375,7 +375,7 @@ $.ajax({
 ## 관련프로젝트
 
 RSA and ECC in JavaScript [Link](http://www-cs-students.stanford.edu/~tjw/jsbn/)<br>
-PBKDF2 [Lingk](https://www.javadoc.io/doc/com.lambdaworks/scrypt/1.2.1/com/lambdaworks/crypto/PBKDF.html)<br>
+PBKDF2 [Link](https://www.javadoc.io/doc/com.lambdaworks/scrypt/1.2.1/com/lambdaworks/crypto/PBKDF.html)<br>
 
 
 
