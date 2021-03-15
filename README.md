@@ -278,8 +278,8 @@ public class LoginServiceImpl implements LoginService {
 ```
 
 ### 암호화
-PBKDF2는 NIST(National Institute of Standards and Technology, 미국표준기술연구소)에 의해서 승인된 알고리즘이며 구현하기 쉬우면서도<br>
-검증된 해쉬함수와 솔트, 스트레칭 등을 사용하여 보안성이 강화되어 있습니다.<br>
+PBKDF2는 NIST(National Institute of Standards and Technology, 미국표준기술연구소)에 의해서 승인된 알고리즘이며<br>
+구현하기 쉬우면서도 검증된 해쉬함수와 솔트, 스트레칭 등을 사용하여 보안성이 강화되어 있습니다.<br>
 <br>
 이 프로젝트에선 doDecrypt() 메소드에서 복호화 한 비밀번호를 단방향 암호화인 PBKDF2 함수와 MD5를 통해 암호화하고 이를 비교합니다.<br>
 >※ 최초 비밀번호 저장 시 위의 방식대로 암호화하여 저장시켜놓아야 합니다.
