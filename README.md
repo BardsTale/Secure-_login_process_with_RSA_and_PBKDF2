@@ -287,26 +287,26 @@ PBKDF2는 NIST(National Institute of Standards and Technology, 미국표준기�
 #SecureModule.java
 
 public static String encryptPBKDF(String userid, String passwd) throws Exception{
-    	/* PBKDF 암호화 알고리즘 */
-		/**
-		* @param   alg     HMAC algorithm to use.
-		* @param   P       Password.
-		* @param   S       Salt.
-		* @param   c       Iteration count.
-		* @param   dkLen   Intended length, in octets, of the derived key.
-		*/
-		String alg ="HmacSHA256"; //사용 해쉬함수 알고리즘
-		byte[] byte_Pass = passwd.getBytes("UTF-8");
-		byte[] byte_Id = userid.getBytes("UTF-8");
-		
-		/* PBKDF2.v1 */
-		int c = 10000;
-		int dkLen = 60;
-		byte[] r1 = PBKDF.pbkdf2(alg, byte_Pass, byte_Id, c, dkLen);
-        
-        //DB에 저장하기 용이한 형태인 MD5로 다시 암호화
-		return makeMD5(new String(r1, "UTF-8"));
-	} 
+	/* PBKDF 암호화 알고리즘 */
+	/**
+	* @param   alg     HMAC algorithm to use.
+	* @param   P       Password.
+	* @param   S       Salt.
+	* @param   c       Iteration count.
+	* @param   dkLen   Intended length, in octets, of the derived key.
+	*/
+	String alg ="HmacSHA256"; //사용 해쉬함수 알고리즘
+	byte[] byte_Pass = passwd.getBytes("UTF-8");
+	byte[] byte_Id = userid.getBytes("UTF-8");
+
+	/* PBKDF2.v1 */
+	int c = 10000;
+	int dkLen = 60;
+	byte[] r1 = PBKDF.pbkdf2(alg, byte_Pass, byte_Id, c, dkLen);
+
+	//DB에 저장하기 용이한 형태인 MD5로 다시 암호화
+	return makeMD5(new String(r1, "UTF-8"));
+} 
 ```
 
 ### 로그인_처리
