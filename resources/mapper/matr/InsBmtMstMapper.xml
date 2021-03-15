@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper 
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="com.KDTR.matr.dao.InsBmtMstDao">
+	<!-- 조회 -->
+	<select id="selectBMTMST" resultType="hashmap">
+		SELECT MATCOD , MATNAM
+		  FROM BMTMST 												
+		 WHERE MATCOD LIKE '%'||#{MATCOD}||'%'
+		 ORDER BY MATCOD
+	</select>
+	
+	<!-- 등록 -->
+    <insert id="insertBMTMST">
+    <selectKey keyProperty="MATCOD2" resultType="String" order="AFTER">
+    	SELECT MATCOD MATCOD2
+    	  FROM BMTMST 
+    	 WHERE MATCOD = #{MATCOD}
+    	   AND MATNAM = #{MATNAM}
+  	</selectKey>
+	  	INSERT INTO BMTMST ( MATCOD, MATNAM, INPDAT, INPSBN )
+		VALUES ( #{MATCOD}, #{MATNAM}, TO_CHAR(SYSDATE, 'YYYYMMDD')
+			   , #{INPSBN} )									
+    </insert>
+
+	
+	<!-- 수정 -->
+    <update id="updateBMTMST">
+	  	UPDATE BMTMST		
+	   	   SET MATNAM = #{MATNAM}
+	         , UPTDAT = TO_CHAR(SYSDATE, 'YYYYMMDD')
+	         , UPTSBN = #{INPSBN}
+	 	 WHERE MATCOD = #{MATCOD}
+    </update>
+    	
+	<!-- 삭제 전 기준치 설정에 사용여부 확인 -->
+	<select id="checkUsing" resultType="int">
+        SELECT COUNT(MATCOD) CNT
+          FROM MATRBS
+         WHERE MATCOD = #{MATCOD}	
+	</select>	
+	
+	<!-- 삭제 -->
+    <delete id="deleteBMTMST">
+	  	DELETE FROM BMTMST		
+	 	 WHERE MATCOD = #{MATCOD}
+    </delete>
+    
+
+</mapper>

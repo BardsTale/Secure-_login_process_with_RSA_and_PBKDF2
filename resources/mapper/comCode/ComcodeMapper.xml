@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper 
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="com.KDTR.comCode.dao.ComcodeDao">
+	<!-- 조회 -->
+	<select id="selBASETR" resultType="hashmap">
+		SELECT A.DAECOD, B.KORNAM DAENAM, A.TETCOD, A.KORNAM, A.REMRK1, A.DSPSEQ
+		  FROM BASETR A												
+		  JOIN BASETR B ON B.DAECOD = '00' AND A.DAECOD = B.TETCOD
+		<choose>
+			<when test = "TRKIND == ''">
+		 WHERE A.DAECOD IN ('TR1','TR2','TR3','TR4','TR5')
+		  	</when>
+		  	<otherwise>
+		 WHERE A.DAECOD = #{TRKIND}
+		  	</otherwise>
+		</choose>
+		 ORDER BY A.DAECOD, A.DSPSEQ
+	</select>
+	
+	<!-- 등록 -->
+    <insert id="insBASETR">
+    <selectKey keyProperty="DAECOD2" resultType="String" order="AFTER">
+    	SELECT DAECOD DAECOD2
+    	  FROM BASETR 
+    	 WHERE DAECOD = #{DAECOD}
+    	   AND TETCOD = #{TETCOD}
+  	</selectKey>
+	  	INSERT INTO BASETR ( DAECOD, TETCOD, KORNAM, DSPSEQ, INPDAT, INPSBN )
+		VALUES ( #{DAECOD}, #{TETCOD}, #{KORNAM}, #{DSPSEQ}, TO_CHAR(SYSDATE, 'YYYYMMDD')
+			   , #{INPSBN} )									
+    </insert>
+	
+	<!-- 수정 -->
+    <update id="updBASETR">
+	  	UPDATE BASETR		
+	   	   SET KORNAM = #{KORNAM}
+	         , DSPSEQ = #{DSPSEQ}
+	         , UPTDAT = TO_CHAR(SYSDATE, 'YYYYMMDD')
+	         , UPTSBN = #{INPSBN}
+	 	 WHERE DAECOD = #{DAECOD}
+	   	   AND TETCOD = #{TETCOD}
+    </update>
+	
+	<!-- 삭제 -->
+    <delete id="delBASETR">
+	  	DELETE FROM BASETR		
+	 	 WHERE DAECOD = #{DAECOD}
+	   	   AND TETCOD = #{TETCOD}
+    </delete>
+</mapper>

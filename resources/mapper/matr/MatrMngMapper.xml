@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper 
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="com.KDTR.matr.dao.MatrMngDao">
+	<!-- 기준치 설정값 조회 -->
+	<select id="selMatrAdminLeft" resultType="hashmap">
+		SELECT B.DSPSEQ, B.CKITEM, A.KORNAM CKNAME, B.MATCOD, B.STRDAT			
+		     , B.BASTYP, B.STRVAL, B.ENDVAL, B.JARISU, B.SPCGBN
+		     , DECODE(B.PERIOD,'null','',DECODE(REGEXP_INSTR(B.PERIOD,'[^0-9]'),0,B.PERIOD||'/Lot',B.PERIOD)) PERIOD
+		     , DECODE(B.BASTYP,1,STRVAL||'이상',DECODE(B.BASTYP,2,STRVAL||'이하',DECODE(B.BASTYP,3,STRVAL||' ~ '||ENDVAL,DECODE(B.BASTYP,4,BASTXT,'1')))) BASTXT
+		  FROM BASETR A								
+		  JOIN MATRBS B								
+		    ON A.TETCOD = B.CKITEM							
+		 WHERE A.DAECOD = 'TR5'
+		   AND B.MATCOD = #{MATCOD}
+		   AND B.STRDAT = #{VSDATE}
+		 ORDER BY B.DSPSEQ DESC
+	</select>	
+	
+	<!-- 헤드 탑 조회 -->
+	<select id="selMatrAdminHeadTop" resultType="java.util.TreeMap">
+		SELECT NVL(A.INPDAT,' ') a, NVL(A.SMPNUM,' ') b, NVL(A.NORMCD,0) c, NVL(A.INPVAL,0) d
+			 , NVL(A.PRONAM,' ') e, NVL(A.MAKECD,' ') f, NVL(B.USER_NM,' ') g
+		  FROM MATRHD A										
+		  LEFT JOIN ZOPR01 B 
+		    ON A.TESTER = B.USER_ID 				
+		 WHERE A.MATCOD = #{MATCOD}							
+		   AND A.STRDAT = #{VSDATE}										
+		   AND A.INPDAT BETWEEN #{STRDAT} AND #{ENDDAT}								
+		 ORDER BY A.INPDAT, TO_NUMBER(A.SMPNUM)
+	</select>
+	
+	<!-- 헤드 바텀 조회 -->
+	<select id="selMatrAdminHeadBottom" resultType="java.util.TreeMap">
+		SELECT NVL(DECODE(A.PASSGB,'Y','합','부'),'합') a, NVL(B.USER_NM,' ') b, NVL(A.REMARK,' ') c, NVL(A.STRTIM,' ') d, NVL(A.ENDTIM,' ') e
+		  FROM MATRHD A										
+		  LEFT JOIN ZOPR01 B 
+		    ON A.CONUSR = B.USER_ID 				
+		 WHERE A.MATCOD = #{MATCOD}							
+		   AND A.STRDAT = #{VSDATE}										
+		   AND A.INPDAT BETWEEN #{STRDAT} AND #{ENDDAT}								
+		 ORDER BY A.INPDAT, TO_NUMBER(A.SMPNUM)
+	</select>
+	
+	<!-- 바디 조회 -->
+	<select id="selMatrAdminBody" resultType="java.util.TreeMap">
+		 SELECT A.INPDAT||A.SMPNUM LOTNUM, DECODE(C.BASTYP,4,NVL(B.PERMIT,' '),NVL(B.ESTVAL,0)) ESTVAL
+		   FROM MATRHD A									
+		   LEFT JOIN MATRBD B 
+		     ON A.MATCOD = B.MATCOD	 		
+		    AND A.LOTNUM = B.LOTNUM	 
+		    AND B.CKITEM IN (SELECT CKITEM
+	                           FROM MATRBS
+	                          WHERE MATCOD = #{MATCOD}	
+	                            AND STRDAT = #{VSDATE})	 			
+		   LEFT JOIN MATRBS C
+		     ON A.MATCOD = C.MATCOD	 		
+		    AND A.STRDAT = C.STRDAT	 		
+		    AND B.CKITEM = C.CKITEM	 		
+		  WHERE A.MATCOD = #{MATCOD}							
+		    AND A.STRDAT = #{VSDATE}								
+		    AND A.INPDAT BETWEEN #{STRDAT} AND #{ENDDAT}						
+		  ORDER BY A.INPDAT, TO_NUMBER(A.SMPNUM), C.DSPSEQ	
+	</select>
+			
+	<!-- 헤드 등록 -->
+    <insert id="insMatrAdminHead">
+    	INSERT INTO MATRHD ( MATCOD, LOTNUM, STRDAT, INPVAL, INPDAT
+						   , SMPNUM, NORMCD, MAKECD, PRONAM, TESTER
+						   , REMARK, STRTIM, ENDTIM, REGUSR, REGDAT ) 
+					VALUES ( #{MATCOD}, #{LOTNUM}, #{STRDAT}, #{INPVAL, jdbcType=VARCHAR}, #{INPDAT}
+						   , #{SMPNUM}, #{NORMCD, jdbcType=VARCHAR}, #{MAKECD, jdbcType=VARCHAR}, #{PRONAM, jdbcType=VARCHAR}, #{TESTER}
+						   , #{REMARK, jdbcType=VARCHAR}, #{STRTIM, jdbcType=VARCHAR}, #{ENDTIM, jdbcType=VARCHAR}, #{TESTER}, TO_CHAR(SYSDATE, 'YYYY-MM-DD HH:MI:SS') ) 
+    </insert>
+	
+	<!-- 헤드 수정 -->
+    <update id="updMatrAdminHead">
+	  	UPDATE MATRHD		
+	   	   SET STRDAT = #{STRDAT, jdbcType=VARCHAR}
+	         , INPVAL = #{INPVAL, jdbcType=VARCHAR}
+	         , INPDAT = #{INPDAT, jdbcType=VARCHAR}
+	         , SMPNUM = #{SMPNUM, jdbcType=VARCHAR}
+	         , NORMCD = #{NORMCD, jdbcType=VARCHAR}
+	         , MAKECD = #{MAKECD, jdbcType=VARCHAR}
+	         , PRONAM = #{PRONAM, jdbcType=VARCHAR}
+	         , TESTER = #{TESTER}
+	         , REMARK = #{REMARK, jdbcType=VARCHAR}
+	         , STRTIM = #{STRTIM, jdbcType=VARCHAR}
+	         , ENDTIM = #{ENDTIM, jdbcType=VARCHAR}
+	         , PASSGB = #{PASSGB, jdbcType=VARCHAR}
+	         , MODUSR = #{TESTER}
+	         , MODDAT = TO_CHAR(SYSDATE, 'YYYY-MM-DD HH:MI:SS')
+	 	 WHERE MATCOD = #{MATCOD}
+	   	   AND LOTNUM = #{LOTNUM}
+    </update>
+    
+	<!-- 헤드 확인자 수정 -->
+    <update id="updPassMatrAdminHead">
+	  	UPDATE MATRHD		
+	   	   SET CONUSR = #{CONUSR}
+	         , MODUSR = #{CONUSR}
+	         , MODDAT = TO_CHAR(SYSDATE, 'YYYY-MM-DD HH:MI:SS')
+	 	 WHERE MATCOD = #{MATCOD}
+	   	   AND LOTNUM = #{LOTNUM}
+    </update>
+    
+	<!-- 바디 등록 -->
+    <insert id="insMatrAdminBody">
+    	INSERT INTO MATRBD ( MATCOD, LOTNUM, CKITEM, STRDAT, ESTVAL
+						   , PASSGB, PERMIT, REMARK, REGUSR, REGDAT ) 
+					VALUES ( #{MATCOD}, #{LOTNUM}, #{CKITEM}, #{STRDAT}, #{ESTVAL, jdbcType=VARCHAR}
+						   , #{PASSGB, jdbcType=VARCHAR}, #{PERMIT, jdbcType=VARCHAR}, #{REMARK, jdbcType=VARCHAR}, #{REGUSR}, TO_CHAR(SYSDATE, 'YYYY-MM-DD HH:MI:SS') ) 
+    </insert>
+	
+	<!-- 바디 수정 -->
+    <update id="updMatrAdminBody">
+	  	UPDATE MATRBD		
+	   	   SET ESTVAL = #{ESTVAL, jdbcType=VARCHAR}
+	         , PERMIT = #{PERMIT, jdbcType=VARCHAR}
+	         , REMARK = #{REMARK, jdbcType=VARCHAR}
+	         , MODUSR = #{REGUSR}
+	         , MODDAT = TO_CHAR(SYSDATE, 'YYYY-MM-DD HH:MI:SS')
+	 	 WHERE MATCOD = #{MATCOD}
+	   	   AND LOTNUM = #{LOTNUM}
+	   	   AND CKITEM = #{CKITEM}
+	   	   AND STRDAT = #{STRDAT}
+    </update>
+	
+	<!-- 헤드 삭제 -->
+    <delete id="delMatrAdminHead">
+	  	DELETE FROM MATRHD		
+	 	 WHERE MATCOD = #{MATCOD}
+	   	   AND STRDAT = #{STRDAT}
+	   	   AND LOTNUM = #{LOTNUM}
+    </delete>
+    
+	<!-- 바디 삭제 -->
+    <delete id="delMatrAdminBody">
+	  	DELETE FROM MATRBD		
+	 	 WHERE MATCOD = #{MATCOD}
+	   	   AND STRDAT = #{STRDAT}
+	   	   AND LOTNUM = #{LOTNUM}
+    </delete>
+</mapper>

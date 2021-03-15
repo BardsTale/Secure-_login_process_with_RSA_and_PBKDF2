@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper 
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="com.KDTR.main.dao.CodmstDao">
+	<!-- 제품코드 조회 -->
+	<select id="selJEPMST" resultType="hashmap">
+		SELECT JPCODE CMDTCD, JPNAME CMDTNM
+		  FROM JEPMST
+	<if test="search != ''">
+		 WHERE  (JPCODE LIKE '%'||#{search}||'%' OR JPNAME LIKE '%'||#{search}||'%')
+	</if>
+		 ORDER BY JPCODE
+	</select>
+	
+	<!-- 부자재코드 조회 -->
+	<select id="selMATCOD" resultType="hashmap">
+		SELECT MATCOD CMDTCD, MATNAM CMDTNM
+		  FROM BMTMST
+	<if test="search != ''">
+		 WHERE  (MATCOD LIKE '%'||#{search}||'%' OR MATNAM LIKE '%'||#{search}||'%')
+	</if>
+		 ORDER BY MATCOD
+	</select>
+	
+	<!-- 검사항목 조회 -->
+	<select id="selBASETRMST" resultType="hashmap">
+		SELECT TETCOD CMDTCD, KORNAM CMDTNM, DSPSEQ REFCD1	
+		  FROM BASETR
+		 WHERE DAECOD = #{MAJOCD}			
+		<if test="search != ''">
+		   AND (TETCOD LIKE '%'||#{search}||'%') OR (KORNAM LIKE '%'||#{search}||'%')			
+		</if> 		
+		 ORDER BY DSPSEQ				
+	</select>
+</mapper>

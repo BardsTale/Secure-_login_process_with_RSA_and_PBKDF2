@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper 
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="com.KDTR.jptr.dao.JptrSelectDao">
+	<!-- 컬럼 타이틀 조회 -->
+	<select id="selJptrListBase" resultType="hashmap">
+	    SELECT A.CKITEM, B.KORNAM CKNAME
+		  FROM JPTRBS A
+		  LEFT JOIN BASETR B
+		    ON A.CKITEM = B.TETCOD
+		   AND B.DAECOD = 'TR2'
+		 WHERE A.JPCODE = #{JPCODE}
+		   AND A.STRDAT = #{VSDATE}
+		 ORDER BY A.DSPSEQ, A.CKITEM
+	</select>
+	
+	<!-- 헤드 조회 -->
+	<select id="selJptrListHead" resultType="hashmap">
+		SELECT A.JPCODE, A.LOTNUM, A.PROVAL, A.STRDAT, A.PRODAT, A.SMPNUM, B.USER_NM CONUSR
+		     , DECODE(CONUSR,null,'작성중','작성완료') CONGBN, A.PASSGB
+          FROM JPTRHD A												
+          LEFT JOIN ZOPR01 B												
+            ON A.CONUSR = B.USER_ID
+		 WHERE A.JPCODE = #{JPCODE}
+		   AND A.STRDAT = #{VSDATE}
+		   <if test="PASSGB != ''">
+		   AND A.PASSGB = #{PASSGB}
+		   </if>	
+		   AND A.PRODAT BETWEEN #{STRDAT} AND #{ENDDAT}
+		 ORDER BY A.PRODAT, A.LOTNUM
+	</select>
+	
+	<!-- 바디조회 -->
+	<select id="selJptrListBody" resultType="hashmap">
+        SELECT A.JPCODE, A.STRDAT, A.PRODAT, A.LOTNUM, B.CKITEM, C.BASTYP, DECODE(C.BASTYP,'4', B.PERMIT, B.ESTVAL) STRVAL
+		  FROM JPTRHD  A
+		  LEFT JOIN JPTRBD  B
+		    ON A.JPCODE = B.JPCODE
+		   AND A.LOTNUM = B.LOTNUM
+		   AND A.STRDAT = B.STRDAT
+		  LEFT JOIN JPTRBS  C
+		    ON B.JPCODE = C.JPCODE
+		   AND B.STRDAT = C.STRDAT
+		   AND B.CKITEM = C.CKITEM
+         JOIN BASETR D													
+           ON D.DAECOD = 'TR2'														
+          AND B.CKITEM = D.TETCOD
+        WHERE A.JPCODE = #{JPCODE}
+	      AND A.STRDAT = #{VSDATE}
+	      <if test="PASSGB != ''">
+	      AND A.PASSGB = #{PASSGB}
+	      </if>	
+	      AND A.PRODAT BETWEEN #{STRDAT} AND #{ENDDAT}		
+	</select>
+</mapper>

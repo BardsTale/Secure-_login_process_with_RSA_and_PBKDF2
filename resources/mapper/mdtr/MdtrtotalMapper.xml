@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper 
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="com.KDTR.mdtr.dao.MdtrTotalDao">
+	<!-- 생산이력 조회 -->
+	<select id="selMdtrTotal" resultType="hashmap">
+		SELECT A.PRODAT, A.JPCODE, B.JPNAME, A.STRDAT, COUNT(*) MDCONT, SUM(PROVAL) PROVAL
+		  FROM MDTRHD A 
+		  JOIN JEPMST B 
+			ON A.JPCODE = B.JPCODE
+		 WHERE A.PRODAT BETWEEN #{STRDAT} AND #{ENDDAT}
+ 		   <if test="JPCODE != ''">
+		   AND A.JPCODE = #{JPCODE}
+		   </if>
+		 GROUP BY A.PRODAT, A.JPCODE, B.JPNAME, A.STRDAT
+		 ORDER BY A.PRODAT		                         
+	</select>
+</mapper>

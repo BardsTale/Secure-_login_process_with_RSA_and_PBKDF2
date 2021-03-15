@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper 
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="com.KDTR.mdtr.dao.MdtrMngDao">
+	<!-- 기준치 설정값 조회 -->
+	<select id="selMdtrAdminLeft" resultType="hashmap">
+		SELECT B.DSPSEQ, B.CKITEM, A.KORNAM CKNAME, B.JPCODE, B.STRDAT			
+		     , B.BASTYP, B.STRVAL, B.ENDVAL, B.JARISU, B.SPCGBN
+		     , DECODE(B.PERIOD,'null','',B.PERIOD||'/Lot') PERIOD
+		     , DECODE(B.BASTYP,1,STRVAL||'이상',DECODE(B.BASTYP,2,STRVAL||'이하',DECODE(B.BASTYP,3,STRVAL||' ~ '||ENDVAL,DECODE(B.BASTYP,4,BASTXT,'1')))) BASTXT
+		  FROM BASETR A								
+		  JOIN MDTRBS B								
+		    ON A.TETCOD = B.CKITEM							
+		 WHERE A.DAECOD = 'TR1'
+		   AND B.JPCODE = #{JPCODE}
+		   AND B.STRDAT = #{VSDATE}
+		 ORDER BY B.DSPSEQ DESC
+	</select>	
+	
+	<!-- 헤드 탑 조회 -->
+	<select id="selMdtrAdminHeadTop" resultType="java.util.TreeMap">
+		SELECT NVL(A.PROVAL,0) a, NVL(A.PRODAT,' ') b, NVL(A.SMPNUM,' ') c, NVL(B.USER_NM,' ') d
+		  FROM MDTRHD A										
+		  LEFT JOIN ZOPR01 B 
+		    ON A.TESTER = B.USER_ID 				
+		 WHERE A.JPCODE = #{JPCODE}							
+		   AND A.STRDAT = #{VSDATE}										
+		   AND A.PRODAT BETWEEN #{STRDAT} AND #{ENDDAT}								
+		 ORDER BY A.PRODAT, A.SMPNUM	
+	</select>
+	
+	<!-- 헤드 바텀 조회 -->
+	<select id="selMdtrAdminHeadBottom" resultType="java.util.TreeMap">
+		SELECT NVL(DECODE(A.PASSGB,'Y','합','부'),'합') a, NVL(B.USER_NM,' ') b, NVL(A.REMARK,' ') c, NVL(A.STRTIM,' ') d, NVL(A.ENDTIM,' ') e
+		  FROM MDTRHD A										
+		  LEFT JOIN ZOPR01 B 
+		    ON A.CONUSR = B.USER_ID 				
+		 WHERE A.JPCODE = #{JPCODE}							
+		   AND A.STRDAT = #{VSDATE}										
+		   AND A.PRODAT BETWEEN #{STRDAT} AND #{ENDDAT}								
+		 ORDER BY A.PRODAT, A.SMPNUM	
+	</select>
+	
+	<!-- 바디 조회 -->
+	<select id="selMdtrAdminBody" resultType="java.util.TreeMap">
+		 SELECT A.PRODAT||A.SMPNUM LOTNUM, DECODE(C.BASTYP,4,NVL(B.PERMIT,' '),NVL(B.ESTVAL,0)) ESTVAL
+		   FROM MDTRHD A									
+		   LEFT JOIN MDTRBD B 
+		     ON A.JPCODE = B.JPCODE	 		
+		    AND A.LOTNUM = B.LOTNUM
+		    AND B.CKITEM IN (SELECT CKITEM
+	                           FROM MDTRBS
+	                          WHERE JPCODE = #{JPCODE}	
+	                            AND STRDAT = #{VSDATE})	 		
+		   LEFT JOIN MDTRBS C
+		     ON B.JPCODE = C.JPCODE	 		
+		    AND B.STRDAT = C.STRDAT	 		
+		    AND B.CKITEM = C.CKITEM	 		
+		  WHERE A.JPCODE = #{JPCODE}							
+		    AND A.STRDAT = #{VSDATE}								
+		    AND A.PRODAT BETWEEN #{STRDAT} AND #{ENDDAT}
+		  ORDER BY A.PRODAT, A.SMPNUM, C.DSPSEQ	
+	</select>
+			
+	<!-- 헤드 등록 -->
+    <insert id="insMdtrAdminHead">
+    	INSERT INTO MDTRHD ( JPCODE, LOTNUM, STRDAT, PROVAL, PRODAT
+						   , SMPNUM, TESTER, REMARK, STRTIM, ENDTIM
+						   , PASSGB, REGUSR, REGDAT ) 
+					VALUES ( #{JPCODE}, #{LOTNUM}, #{STRDAT}, #{PROVAL, jdbcType=VARCHAR}, #{PRODAT}
+						   , #{SMPNUM}, #{TESTER}, #{REMARK, jdbcType=VARCHAR}, #{STRTIM, jdbcType=VARCHAR}, #{ENDTIM, jdbcType=VARCHAR}
+						   , #{PASSGB, jdbcType=VARCHAR}, #{TESTER}, TO_CHAR(SYSDATE, 'YYYY-MM-DD HH:MI:SS') ) 
+    </insert>
+	
+	<!-- 헤드 수정 -->
+    <update id="updMdtrAdminHead">
+	  	UPDATE MDTRHD		
+	   	   SET STRDAT = #{STRDAT, jdbcType=VARCHAR}
+	         , PROVAL = #{PROVAL, jdbcType=VARCHAR}
+	         , PRODAT = #{PRODAT, jdbcType=VARCHAR}
+	         , SMPNUM = #{SMPNUM, jdbcType=VARCHAR}
+	         , REMARK = #{REMARK, jdbcType=VARCHAR}
+	         , STRTIM = #{STRTIM, jdbcType=VARCHAR}
+	         , ENDTIM = #{ENDTIM, jdbcType=VARCHAR}
+	         , PASSGB = #{PASSGB, jdbcType=VARCHAR}
+	         , MODUSR = #{TESTER}
+	         , MODDAT = TO_CHAR(SYSDATE, 'YYYY-MM-DD HH:MI:SS')
+	 	 WHERE JPCODE = #{JPCODE}
+	   	   AND LOTNUM = #{LOTNUM}
+    </update>
+    
+	<!-- 헤드 확인자 수정 -->
+    <update id="updPassMdtrAdminHead">
+	  	UPDATE MDTRHD		
+	   	   SET CONUSR = #{CONUSR}
+	         , MODUSR = #{CONUSR}
+	         , MODDAT = TO_CHAR(SYSDATE, 'YYYY-MM-DD HH:MI:SS')
+	 	 WHERE JPCODE = #{JPCODE}
+	   	   AND LOTNUM = #{LOTNUM}
+    </update>
+
+	<!-- 바디 등록 -->
+    <insert id="insMdtrAdminBody">
+    	INSERT INTO MDTRBD ( JPCODE, LOTNUM, CKITEM, STRDAT, ESTVAL
+						   , PERMIT, REMARK, REGUSR, REGDAT ) 
+					VALUES ( #{JPCODE}, #{LOTNUM}, #{CKITEM}, #{STRDAT}, #{ESTVAL, jdbcType=VARCHAR}
+						   , #{PERMIT, jdbcType=VARCHAR}, #{REMARK, jdbcType=VARCHAR}, #{REGUSR}, TO_CHAR(SYSDATE, 'YYYY-MM-DD HH:MI:SS') ) 
+    </insert>
+	
+	<!-- 바디 수정 -->
+    <update id="updMdtrAdminBody">
+	  	UPDATE MDTRBD		
+	   	   SET ESTVAL = #{ESTVAL, jdbcType=VARCHAR}
+	         , PERMIT = #{PERMIT, jdbcType=VARCHAR}
+	         , REMARK = #{REMARK, jdbcType=VARCHAR}
+	         , MODUSR = #{REGUSR}
+	         , MODDAT = TO_CHAR(SYSDATE, 'YYYY-MM-DD HH:MI:SS')
+	 	 WHERE JPCODE = #{JPCODE}
+	   	   AND LOTNUM = #{LOTNUM}
+	   	   AND CKITEM = #{CKITEM}
+	   	   AND STRDAT = #{STRDAT}
+    </update>
+	
+	<!-- 헤드 삭제 -->
+    <delete id="delMdtrAdminHead">
+	  	DELETE FROM MDTRHD		
+	 	 WHERE JPCODE = #{JPCODE}
+	   	   AND STRDAT = #{STRDAT}
+	   	   AND LOTNUM = #{LOTNUM}
+    </delete>
+    
+	<!-- 바디 삭제 -->
+    <delete id="delMdtrAdminBody">
+	  	DELETE FROM MDTRBD		
+	 	 WHERE JPCODE = #{JPCODE}
+	   	   AND STRDAT = #{STRDAT}
+	   	   AND LOTNUM = #{LOTNUM}
+    </delete>
+</mapper>

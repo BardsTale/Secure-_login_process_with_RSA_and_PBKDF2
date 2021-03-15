@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:th="http://www.thymeleaf.org">
+<head>
+<!-- RSA 암호화 모듈-->
+<script type="text/javascript" src="http://www-cs-students.stanford.edu/~tjw/jsbn/rsa.js"></script>
+<script type="text/javascript" src="http://www-cs-students.stanford.edu/~tjw/jsbn/jsbn.js"></script>
+<script type="text/javascript" src="http://www-cs-students.stanford.edu/~tjw/jsbn/prng4.js"></script>
+<script type="text/javascript" src="http://www-cs-students.stanford.edu/~tjw/jsbn/rng.js"></script>
+<!-- jQuery -->
+<script src="vendor_js/jquery-1.11.2.min.js"></script>
+<!-- 레이아웃 -->
+<script src="js/login.js"></script>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Secure Login</title>
+</head>
+<body>
+
+<div class="login_container">
+	<div class="login_title">Secure Login Sample</div>
+	<div class="login_id_div">
+		<input name="USERID" type="text" id="USERID" value="" maxlength="7" placeholder="ID"/>
+	</div>
+	<div class="login_pw_div" style="">
+		<input type="password" name="PASSWD" id="PASSWD" placeholder="PASSWORD"/>
+	</div>
+	<input type="button" value="로그인" id="loginBtn"/>
+	<!-- RSA키 -->
+	<input type="hidden" id="rsaPublicKeyModulus" th:value="${session.publicKeyModulus}" />
+  <input type="hidden" id="rsaPublicKeyExponent" th:value="${session.publicKeyExponent}" />
+	<form name="login_form" id="login_form" method="POST" action="login">
+		<input type="hidden" name="securedUSERID" id="securedUSERID" value="" />
+    <input type="hidden" name="securedPASSWD" id="securedPASSWD" value="" />
+	</form>
+</div>
+
+</body>
+</html>

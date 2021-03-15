@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper 
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="com.KDTR.mdtr.dao.MdtrbaseDao">
+	<!-- 버전 조회 -->
+	<select id="selMdtrVersion" resultType="hashmap">
+		SELECT STRDAT										
+		  FROM MDTRBS							
+		 WHERE JPCODE = #{JPCODE} 									
+		 GROUP BY STRDAT 									
+		 ORDER BY STRDAT DESC
+	</select>	
+
+	<!-- 조회 -->
+	<select id="selMdtrbase" resultType="hashmap">
+		SELECT DECODE(A.BASTYP,1,STRVAL||'이상',DECODE(A.BASTYP,2,STRVAL||'이하',DECODE(A.BASTYP,3,STRVAL||' ~ '||ENDVAL,DECODE(A.BASTYP,4,BASTXT,'1')))) BASTXT
+			 , A.*, B.JPNAME, C.KORNAM CKNAME								
+	         , CASE WHEN NVL(E.USER_ID,'') <![CDATA[ <> ]]> '' THEN E.USER_NM
+	           ELSE D.USER_NM END USERNM					
+	      	 , CASE WHEN NVL(E.USER_ID,'') <![CDATA[ <> ]]> '' THEN A.MODDAT	
+	           ELSE A.REGDAT END REGDAT
+	         , DECODE(A.BASTYP,1,'이상',DECODE(A.BASTYP,2,'이하',DECODE(A.BASTYP,3,'구간',DECODE(A.BASTYP,4,'양호')))) BASTYPNM
+		  FROM MDTRBS A								
+		  LEFT OUTER JOIN JEPMST B								
+		    ON A.JPCODE = B.JPCODE								
+		  LEFT OUTER JOIN BASETR C					
+		    ON C.DAECOD = 'TR1'								
+		   AND A.CKITEM = C.TETCOD								
+		  LEFT OUTER JOIN ZOPR01 D					
+		    ON A.REGUSR = D.USER_ID							
+		  LEFT OUTER JOIN ZOPR01 E					
+		    ON A.MODUSR = E.USER_ID							
+		 WHERE 1=1 			
+		<if test="JPCODE != ''">
+		   AND A.JPCODE = #{JPCODE}
+		</if>								
+		<if test="VSDATE != ''">
+		   AND A.STRDAT = #{VSDATE}
+		</if>								
+		 ORDER BY A.JPCODE, A.STRDAT, A.DSPSEQ
+	</select>
+			
+	<!-- 등록 -->
+    <insert id="insMdtrbase">
+    	INSERT INTO MDTRBS ( JPCODE, STRDAT, CKITEM, ENDGBN, SPCGBN
+						   , DSPSEQ, BASTXT, BASTYP, STRVAL, ENDVAL
+						   , PASSGB, PERIOD, JARISU, REGUSR, REGDAT) 
+					VALUES ( #{JPCODE}, #{STRDAT}, #{CKITEM}, 'N', #{SPCGBN, jdbcType=VARCHAR}
+						   , #{DSPSEQ, jdbcType=VARCHAR}, #{BASTXT, jdbcType=VARCHAR}, #{BASTYP, jdbcType=VARCHAR}, #{STRVAL, jdbcType=VARCHAR}, #{ENDVAL, jdbcType=VARCHAR}
+						   , #{PASSGB, jdbcType=VARCHAR}, #{PERIOD, jdbcType=VARCHAR}, #{JARISU, jdbcType=VARCHAR}, #{REGUSR}, TO_CHAR(SYSDATE, 'YYYY-MM-DD HH:MI:SS') )
+    </insert>
+    
+    <!-- 이미 성적서 자료가 등록된 버전에서 새로운 기준치를 추가할 경우 Body에 빈 데이터 값 등록  -->
+    <update id="insMdtrBodyByMdtrbase">
+    <selectKey keyProperty="ITMCNT" resultType="Integer" order="BEFORE">
+    	SELECT COUNT(JPCODE)
+    	  FROM MDTRBD 
+    	 WHERE JPCODE = #{JPCODE}
+		   AND STRDAT = #{STRDAT}
+		   AND CKITEM = #{CKITEM}
+  	</selectKey>
+		INSERT INTO MDTRBD(JPCODE, LOTNUM, CKITEM, STRDAT, ESTVAL) 
+		SELECT #{JPCODE}, LOTNUM, #{CKITEM}, #{STRDAT}, 0
+		  FROM MDTRBD
+		 WHERE JPCODE = #{JPCODE}
+		   AND STRDAT = #{STRDAT}
+		   AND 0 = #{ITMCNT}
+		 GROUP BY LOTNUM
+    </update>
+	
+	<!-- 수정 -->
+    <update id="updMdtrbase">
+	  	UPDATE MDTRBS		
+	   	   SET SPCGBN = #{SPCGBN, jdbcType=VARCHAR}
+	         , DSPSEQ = #{DSPSEQ, jdbcType=VARCHAR}
+	         , BASTXT = #{BASTXT, jdbcType=VARCHAR}
+	         , BASTYP = #{BASTYP, jdbcType=VARCHAR}
+	         , STRVAL = #{STRVAL, jdbcType=VARCHAR}
+	         , ENDVAL = #{ENDVAL, jdbcType=VARCHAR}
+	         , PASSGB = #{PASSGB, jdbcType=VARCHAR}
+	         , PERIOD = #{PERIOD, jdbcType=VARCHAR}
+	         , JARISU = #{JARISU, jdbcType=VARCHAR}
+	         , MODUSR = #{MODUSR}
+	         , MODDAT = TO_CHAR(SYSDATE, 'YYYYMMDD')
+	 	 WHERE JPCODE = #{JPCODE}
+	   	   AND STRDAT = #{STRDAT}
+	   	   AND CKITEM = #{CKITEM}
+    </update>
+	
+	<!-- 삭제 -->
+    <delete id="delMdtrbase">
+	  	DELETE FROM MDTRBS		
+	 	 WHERE JPCODE = #{JPCODE}
+	   	   AND STRDAT = #{STRDAT}
+	   	   AND CKITEM = #{CKITEM}
+    </delete>
+</mapper>

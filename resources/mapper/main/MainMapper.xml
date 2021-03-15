@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper 
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="com.KDTR.main.dao.MainDao">
+	<!-- 날짜 얻기1 -->
+	<select id="getDate1" resultType="String">
+		SELECT TO_CHAR(SYSDATE, 'YYYY-MM-DD HH24:MI:SS') NOWDAT
+		  FROM DUAL
+	</select>
+	
+	<!-- 날짜 얻기2 -->
+	<select id="getDate2" resultType="String">
+		SELECT TO_CHAR(SYSDATE, 'YYYY-MM-DD') NOWDAT
+		  FROM DUAL
+	</select>
+	
+	<!-- 날짜 얻기3 -->
+	<select id="getDateLog" resultType="String">
+		SELECT TO_CHAR(SYSTIMESTAMP, 'YYYYMMDDHH24MISSFF') NOWDAT
+		  FROM DUAL
+	</select>
+</mapper>

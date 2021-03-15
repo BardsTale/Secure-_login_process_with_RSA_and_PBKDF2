@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper 
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="com.KDTR.main.dao.MenuDao">
+	<!-- 메뉴 헤드 -->
+	<select id="getMenuHead" resultType="hashmap">
+		SELECT HADCOD, MIN(SEQNUM) SEQNUM
+		  FROM PGMLST
+		 GROUP BY HADCOD
+		 ORDER BY SEQNUM, HADCOD
+	</select>
+	
+	<!-- 메뉴 바디-->
+	<select id="getMenuBody" resultType="hashmap">
+		SELECT HADCOD, PGMNAM, PGMCOD
+		  FROM PGMLST
+		 ORDER BY SEQNUM, HADCOD
+	</select>
+</mapper>

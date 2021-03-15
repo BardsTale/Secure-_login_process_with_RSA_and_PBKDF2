@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper 
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="com.KDTR.scanList.dao.AllScanListDao">
+	<!-- 버전 조회 -->
+	<select id="selMdtrVersion" resultType="hashmap">
+		SELECT STRDAT										
+		  FROM MDTRBS							
+		 WHERE JPCODE = #{JPCODE} 									
+		 GROUP BY STRDAT 									
+		 ORDER BY STRDAT DESC
+	</select>	
+
+	<!-- 조회 -->
+	<select id="selAllScanList" resultType="hashmap">
+		SELECT A.*, B.JPNAME, C.USER_NM USERNM							
+              ,CASE WHEN NVL(D.USER_ID,'') != '' THEN D.USER_NM		
+               ELSE C.USER_NM END USERNM							
+              ,CASE WHEN NVL(D.USER_ID,'') != '' THEN A.MODDAT		
+               ELSE A.REGDAT END REGDAT							
+          FROM ALSCLS A									
+          LEFT OUTER JOIN JEPMST B							
+            ON A.JPCODE = B.JPCODE										
+          JOIN ZOPR01 C										
+            ON A.REGUSR = C.USER_ID									
+          LEFT OUTER JOIN ZOPR01 D							
+            ON A.MODUSR = D.USER_ID									
+         WHERE 1 = 1
+         <if test="JPCODE != ''">
+		   AND A.JPCODE = #{JPCODE}
+		</if>								
+		<if test="sMNGDAT != ''">
+		   AND A.MNGDAT BETWEEN #{sMNGDAT} AND #{eMNGDAT} 
+		</if>															
+         ORDER BY A.FILENM
+	</select>
+			
+	<!-- 등록 -->
+    <insert id="insAllScanList">
+    	INSERT INTO ALSCLS ( JPCODE, FILENM, LOTNUM, MNGDAT, REMARK
+    					   , REGUSR, REGDAT) 
+					VALUES ( #{JPCODE}, #{FILENM}, #{LOTNUM}, #{MNGDAT}, #{REMARK, jdbcType=VARCHAR}
+						   , #{REGUSR}, TO_CHAR(SYSDATE, 'YYYY-MM-DD HH:mm:SS') )
+    </insert>
+	
+	<!-- 수정 -->
+    <update id="updAllScanList">
+	  	UPDATE ALSCLS		
+	   	   SET FILENM = #{FILENM, jdbcType=VARCHAR}
+	         , MNGDAT = #{MNGDAT, jdbcType=VARCHAR}
+	         , REMARK = #{REMARK, jdbcType=VARCHAR}
+	         , MODUSR = #{MODUSR}
+	         , MODDAT = TO_CHAR(SYSDATE, 'YYYYMMDD')
+	 	 WHERE JPCODE = #{JPCODE}
+	   	   AND LOTNUM = #{LOTNUM}
+	   	   AND MNGDAT = #{MNGDAT}
+    </update>
+	
+	<!-- 삭제 -->
+    <delete id="delAllScanList">
+	  	DELETE FROM ALSCLS		
+	 	 WHERE JPCODE = #{JPCODE}
+	   	   AND LOTNUM = #{LOTNUM}
+	   	   AND MNGDAT = #{MNGDAT}
+    </delete>
+</mapper>

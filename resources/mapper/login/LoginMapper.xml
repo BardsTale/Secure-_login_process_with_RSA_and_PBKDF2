@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper 
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="com.KDTR.login.dao.LoginDao">
+	<!-- 사용자 정보 얻기 -->
+	<select id="getLoginInfo" parameterType="String" resultType="com.KDTR.login.domain.ZOPR01_VO">
+		SELECT A.USER_ID, A.PASSWD, A.USER_NM, A.GRADE									
+		     , CASE WHEN B.USERID IS NULL THEN 'N' ELSE 'Y' END MCONGB			
+		     , CASE WHEN C.USERID IS NULL THEN 'N' ELSE 'Y' END JCONGB			
+		  FROM ZOPR01 A 														
+		  LEFT OUTER JOIN TRINFO B 
+		    ON B.MNGGBN = 'M' 
+		   AND A.USER_ID = B.USERID 	
+		  LEFT OUTER JOIN TRINFO C 
+		    ON C.MNGGBN = 'J' 
+		   AND A.USER_ID = C.USERID	
+		 WHERE A.USER_ID = UPPER(#{USER_ID})													
+	</select>
+</mapper>

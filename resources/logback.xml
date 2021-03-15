@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+	<!-- Console Appender -->
+	<appender name="Console" class="ch.qos.logback.core.ConsoleAppender">
+		<encoder>
+			<charset>UTF-8</charset>
+			<pattern>%d{yyyyMMdd HH:mm:ss.SSS} [%thread] %-3level %logger{5} - %msg %n</pattern>
+		</encoder>
+	</appender>
+	<!-- File Appender -->
+	<appender name="File" class="ch.qos.logback.core.rolling.RollingFileAppender">
+		<encoder>
+			<pattern>%d{yyyyMMdd HH:mm:ss.SSS} [%thread] %-3level %logger{5} - %msg %n</pattern>
+		</encoder>
+		<file></file><!-- 파일안에 내용 입력시 로그파일 이름 고정으로 생성 -->
+		<rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+			<fileNamePattern>log_%d{yyyyMMdd}_%i.log</fileNamePattern><!-- <file>태그에 미입력시 해당 패턴대로 파일 생성 -->
+			<maxFileSize>100MB</maxFileSize><!-- 파일 최대 크기 지정 -->
+			<maxHistory>60</maxHistory><!-- 파일 보관 기간 지정 -->
+		</rollingPolicy>
+	</appender>
+
+	<logger name="jdbc" level="OFF" />
+	<logger name="jdbc.sqltiming" level="DEBUG" additivity="false">
+		<appender-ref ref="Console" />
+		<appender-ref ref="File" />
+	</logger>
+	
+	<logger name="jdbc.audit" level="WARN" additivity="false">
+		<appender-ref ref="Console" />
+		<appender-ref ref="File" />
+	</logger>
+	<root level="INFO">
+		<appender-ref ref="Console" />
+		<appender-ref ref="File" />
+	</root>
+	<!-- 일반 Logger용 설정 -->
+	<logger name="com.KDTR.aop.LoggerAspect" level="DEBUG" additivity="false">
+		<appender-ref ref="Console" />
+		<appender-ref ref="File" />
+	</logger>
+</configuration>
